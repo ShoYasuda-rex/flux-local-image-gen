@@ -1,4 +1,4 @@
-# openvino-flux
+# flux-local-image-gen
 
 FLUX.1-schnell を OpenVINO 経由で Intel Arc GPU（Intel Arc 140V）で動かすローカル画像生成 API サーバー。
 他プロジェクトから HTTP 経由でアセット生成を依頼する用途。
