@@ -1,0 +1,9 @@
+venv/
+models/
+outputs/
+check_log/
+.claude/
+.ruff_cache/
+__pycache__/
+*.pyc
+test_output.png
