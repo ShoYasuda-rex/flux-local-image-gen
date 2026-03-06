@@ -21,6 +21,12 @@ python test_generate.py
 python test_batch_api.py
 ```
 
+```bash
+# Claude Code（Git Bash）からサーバー起動する場合
+# ※ source venv/Scripts/activate は効かないので venv の python を直接指定
+./venv/Scripts/python.exe api_server.py
+```
+
 ## Architecture
 
 ```
@@ -45,6 +51,17 @@ API: `http://127.0.0.1:8188`
 - **FLUX.1-schnell**（devではない）: 4ステップ/16-19秒。プロトタイプ用途に十分
 - **FastAPI直ラップ**（ComfyUIではない）: ComfyUIはCUDA前提でIntel GPU非対応
 - **変換済みモデル直接DL**（自前変換ではない）: `OpenVINO/FLUX.1-schnell-int8-ov` を使用、変換時のバージョン不整合を回避
+
+## Model Characteristics
+
+詳細は `docs/MODEL_CHARACTERISTICS.md` を参照。要点:
+
+- **人物クローズアップはアニメ調に収束**（リアル/ドット指定が効かない）
+  - 迂回策: リアル→カメラ機種名(Canon EOS R5等)、ドット→Minecraft/sprite sheet指定
+  - 水彩/フラット/ちび/浮世絵等の具体的画風は人物でも効く
+- **アイテム・乗り物・建物・動物はスタイル制御◎**
+- **512×512 / 4ステップが推奨**（コスパ最良）
+- テキスト描画は不可
 
 ## Known Issues
 

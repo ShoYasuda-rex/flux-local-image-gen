@@ -53,6 +53,7 @@ class GenerateRequest(BaseModel):
     height: int = Field(default=512, ge=256, le=1024)
     width: int = Field(default=512, ge=256, le=1024)
     filename: Optional[str] = None
+    remove_bg: bool = Field(default=False, description="黒背景を透過に変換する")
 
 
 class BatchRequest(BaseModel):
@@ -99,10 +100,37 @@ def load_pipeline():
         return pipe
 
 
+def _slugify_prompt(prompt: str, max_len: int = 48) -> str:
+    """プロンプトからファイル名用のスラッグを生成する。"""
+    import re
+    slug = prompt.lower().strip()
+    # pixel art, game sprite 等の汎用ワードを除去
+    for noise in ["pixel art", "game sprite", "game asset", "no anti-aliasing",
+                   "sharp pixels", "clean pixel edges", "black background",
+                   "solid black background", "front view", "front facing"]:
+        slug = slug.replace(noise, "")
+    slug = re.sub(r"[^a-z0-9]+", "_", slug)
+    slug = slug.strip("_")
+    # max_len で切り、末尾の _ を除去
+    slug = slug[:max_len].rstrip("_")
+    return slug or "image"
+
+
+def _remove_black_bg(image, threshold: int = 30):
+    """黒背景（RGB各チャンネルがthreshold以下）を透明にする。"""
+    import numpy as np
+    img = image.convert("RGBA")
+    data = np.array(img)
+    mask = (data[:, :, 0] <= threshold) & (data[:, :, 1] <= threshold) & (data[:, :, 2] <= threshold)
+    data[mask, 3] = 0
+    from PIL import Image as PILImage
+    return PILImage.fromarray(data)
+
+
 def generate_single(req: GenerateRequest, output_dir: Path) -> dict:
     pipeline = load_pipeline()
 
-    filename = req.filename or f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}.png"
+    filename = req.filename or f"{_slugify_prompt(req.prompt)}_{uuid.uuid4().hex[:4]}.png"
     filename = Path(filename).name
     if not filename.endswith(".png"):
         filename += ".png"
@@ -118,6 +146,9 @@ def generate_single(req: GenerateRequest, output_dir: Path) -> dict:
             width=req.width,
             guidance_scale=0.0,
         ).images[0]
+
+    if req.remove_bg:
+        image = _remove_black_bg(image)
 
     image.save(str(output_path))
     gen_time = time.time() - t0
@@ -188,7 +219,9 @@ async def batch_generate(req: BatchRequest):
         if not str(output_dir).startswith(str(OUTPUT_DIR.resolve())):
             raise HTTPException(status_code=400, detail="output_dir must be within outputs/")
     else:
-        output_dir = OUTPUT_DIR / f"batch_{job_id}"
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+        first_slug = _slugify_prompt(req.prompts[0].prompt, max_len=30)
+        output_dir = OUTPUT_DIR / f"{timestamp}_{first_slug}"
     output_dir.mkdir(parents=True, exist_ok=True)
 
     batch_jobs[job_id] = {

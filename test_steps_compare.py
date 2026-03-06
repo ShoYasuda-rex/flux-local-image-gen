@@ -43,6 +43,6 @@ for steps in [4, 8]:
 
     filename = f"warrior_{steps}steps.png"
     image.save(str(OUTPUT_DIR / filename))
-    print(f"  {filename} — {gen_time:.1f}s\n")
+    print(f"  {filename} -{gen_time:.1f}s\n")
 
 print(f"Done! Compare images in {OUTPUT_DIR}")
