@@ -4,6 +4,11 @@ outputs/
 check_log/
 .claude/
 .ruff_cache/
+.playwright-mcp/
 __pycache__/
 *.pyc
+*.key
+*.pem
+.env
+.env.*
 test_output.png

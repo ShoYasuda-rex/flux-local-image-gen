@@ -15,13 +15,13 @@ MODEL_PATH = Path(__file__).parent / "models" / "flux1-schnell-int8"
 
 if not MODEL_PATH.exists():
     print(f"Model not found at {MODEL_PATH}")
-    print("Run resume_download.py first.")
+    print("Run: huggingface-cli download OpenVINO/FLUX.1-schnell-int8-ov --local-dir models/flux1-schnell-int8")
     sys.exit(1)
 
 transformer_bin = MODEL_PATH / "transformer" / "openvino_model.bin"
 if not transformer_bin.exists() or transformer_bin.stat().st_size < 1_000_000:
     print(f"transformer/openvino_model.bin missing or too small ({transformer_bin.stat().st_size if transformer_bin.exists() else 0} bytes)")
-    print("Model download may be incomplete. Run resume_download.py first.")
+    print("Model download may be incomplete. Run: huggingface-cli download OpenVINO/FLUX.1-schnell-int8-ov --local-dir models/flux1-schnell-int8")
     sys.exit(1)
 
 print(f"Model path: {MODEL_PATH}")

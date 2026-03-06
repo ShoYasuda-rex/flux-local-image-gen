@@ -30,6 +30,15 @@ GPU が認識されない場合:
 
 ## Setup
 
+AIエージェント（Claude Code 等）に以下のプロンプトを渡すだけでセットアップできます:
+
+> **flux-local-image-gen をセットアップして。**
+> リポジトリ: https://github.com/ShoYasuda-rex/flux-local-image-gen.git
+> 手順: clone → python venv作成 → pip install -r requirements.txt → huggingface-cli download OpenVINO/FLUX.1-schnell-int8-ov --local-dir models/flux1-schnell-int8 → python api_server.py でサーバー起動（ポート8188）。モデルDLは約15.7GB。初回起動時のモデルロードに約120秒かかる。
+
+<details>
+<summary>手動セットアップ手順</summary>
+
 ```powershell
 # 1. リポジトリをクローン
 git clone https://github.com/ShoYasuda-rex/flux-local-image-gen.git
@@ -45,6 +54,8 @@ pip install -r requirements.txt
 # 4. モデルダウンロード（約 15.7GB、回線速度により 10〜30 分）
 huggingface-cli download OpenVINO/FLUX.1-schnell-int8-ov --local-dir models/flux1-schnell-int8
 ```
+
+</details>
 
 ### モデルダウンロードが途中で止まった場合
 

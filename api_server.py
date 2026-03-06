@@ -11,7 +11,6 @@ API エンドポイント:
   GET  /health         — ヘルスチェック
 """
 import os
-import sys
 import time
 import uuid
 import json
@@ -36,6 +35,7 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 pipe = None
 pipe_lock = threading.Lock()
 batch_jobs: dict = {}
+BATCH_JOBS_MAX_COMPLETED = 100
 
 
 @asynccontextmanager
@@ -57,7 +57,7 @@ class GenerateRequest(BaseModel):
 
 
 class BatchRequest(BaseModel):
-    prompts: list[GenerateRequest]
+    prompts: list[GenerateRequest] = Field(..., max_length=20)
     output_dir: Optional[str] = None
 
 
@@ -187,6 +187,13 @@ def run_batch(job_id: str, requests: list[GenerateRequest], output_dir: Path):
     manifest_path = output_dir / f"batch_{job_id}.json"
     with open(manifest_path, "w", encoding="utf-8") as f:
         json.dump(job, f, indent=2, ensure_ascii=False)
+
+    # 完了済みジョブが上限を超えたら古いものから削除
+    completed = [k for k, v in batch_jobs.items() if v.get("status") == "completed"]
+    if len(completed) > BATCH_JOBS_MAX_COMPLETED:
+        completed.sort(key=lambda k: batch_jobs[k].get("finished_at", ""))
+        for old_id in completed[:len(completed) - BATCH_JOBS_MAX_COMPLETED]:
+            del batch_jobs[old_id]
 
 
 @app.get("/health")
