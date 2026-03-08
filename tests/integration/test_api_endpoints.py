@@ -2,6 +2,7 @@
 パイプライン（GPU推論）をモック化し、全エンドポイントの動作を検証する。
 副作用のある外部通信は一切発生しない。
 """
+import re
 import sys
 import json
 from pathlib import Path
@@ -103,24 +104,24 @@ class TestGenerateEndpoint:
         assert data["prompt"] == "a test robot"
 
     def test_generate_with_custom_filename(self, client, mock_pipeline, reset_state):
-        # カスタムファイル名が反映される
+        # カスタムファイル名が反映される（サフィックス付き）
         resp = client.post("/generate", json={
             "prompt": "a cat",
             "filename": "my_cat.png",
         })
         assert resp.status_code == 200
         data = resp.json()
-        assert data["filename"] == "my_cat.png"
+        assert re.match(r"my_cat_[0-9a-f]{4}\.png$", data["filename"])
 
     def test_generate_auto_appends_png(self, client, mock_pipeline, reset_state):
-        # .png がついていないファイル名に自動付与される
+        # .png がついていないファイル名にもサフィックス+.pngが付与される
         resp = client.post("/generate", json={
             "prompt": "a cat",
             "filename": "my_cat",
         })
         assert resp.status_code == 200
         data = resp.json()
-        assert data["filename"] == "my_cat.png"
+        assert re.match(r"my_cat_[0-9a-f]{4}\.png$", data["filename"])
 
     def test_generate_with_remove_bg(self, client, mock_pipeline, reset_state):
         # remove_bg=True でリクエストが成功する

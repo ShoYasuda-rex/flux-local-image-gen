@@ -130,10 +130,10 @@ def _remove_black_bg(image, threshold: int = 30):
 def generate_single(req: GenerateRequest, output_dir: Path) -> dict:
     pipeline = load_pipeline()
 
-    filename = req.filename or f"{_slugify_prompt(req.prompt)}_{uuid.uuid4().hex[:4]}.png"
-    filename = Path(filename).name
-    if not filename.endswith(".png"):
-        filename += ".png"
+    suffix = uuid.uuid4().hex[:4]
+    base = req.filename or _slugify_prompt(req.prompt)
+    base = Path(base).stem  # 拡張子を除去
+    filename = f"{base}_{suffix}.png"
 
     output_path = output_dir / filename
 

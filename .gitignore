@@ -12,3 +12,6 @@ __pycache__/
 .env
 .env.*
 test_output.png
+generate_200_samples.py
+test_100_rpg.py
+test_200_characteristics.py
